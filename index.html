@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flashcards AWS Practitioner</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .flashcard-container {
+        width: 80%;
+        max-width: 600px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        padding: 20px;
+      }
+      .flashcard {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+        margin-bottom: 20px;
+        cursor: pointer;
+        background-color: #ffffff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      .flashcard p {
+        margin: 0;
+        padding: 10px;
+        display: none;
+      }
+      .flashcard .question {
+        display: block;
+      }
+      button {
+        margin: 5px;
+        padding: 10px 20px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="flashcard-container">
+      <div class="flashcard" id="flashcard">
+        <p class="question" id="question">Clique para ver a resposta</p>
+        <p class="answer" id="answer"></p>
+      </div>
+      <button onclick="previousFlashcard()">Anterior</button>
+      <button onclick="nextFlashcard()">Próximo</button>
+    </div>
+
+    <script>
+      // Lista de perguntas e respostas mais comuns no exame AWS Practitioner
+      const flashcards = [
+        {
+          question: "O que é a AWS?",
+          answer:
+            "A AWS é uma plataforma de computação em nuvem que oferece uma variedade de serviços como computação, armazenamento e bancos de dados, disponível sob demanda e paga conforme o uso.",
+        },
+        {
+          question: "O que é Amazon EC2?",
+          answer:
+            "Amazon EC2 (Elastic Compute Cloud) permite que você execute instâncias de servidores virtuais na nuvem e escale recursos conforme necessário.",
+        },
+        {
+          question: "Qual é a função do AWS IAM?",
+          answer:
+            "AWS IAM (Identity and Access Management) permite gerenciar o acesso aos serviços e recursos da AWS com segurança.",
+        },
+        {
+          question: "O que é o Amazon S3?",
+          answer:
+            "Amazon S3 (Simple Storage Service) é um serviço de armazenamento de objetos escalável, usado para armazenar e recuperar qualquer quantidade de dados.",
+        },
+        {
+          question: "Como o AWS Lambda funciona?",
+          answer:
+            "AWS Lambda é um serviço de computação que permite executar código sem a necessidade de provisionar ou gerenciar servidores, cobrando apenas pelo tempo de execução.",
+        },
+        {
+          question: "Qual é o objetivo do Amazon RDS?",
+          answer:
+            "O Amazon RDS (Relational Database Service) facilita a configuração, operação e escalabilidade de bancos de dados relacionais na nuvem.",
+        },
+        {
+          question: "O que é um VPC?",
+          answer:
+            "VPC (Virtual Private Cloud) é uma rede virtual na AWS que permite controlar a infraestrutura de rede de seus recursos.",
+        },
+        {
+          question: "Como funciona o AWS Auto Scaling?",
+          answer:
+            "AWS Auto Scaling ajusta automaticamente a capacidade de computação para manter o desempenho ideal ao menor custo.",
+        },
+        {
+          question: "Qual é a função do Amazon CloudFront?",
+          answer:
+            "Amazon CloudFront é um serviço de entrega de conteúdo (CDN) que distribui dados, vídeos, aplicativos e APIs globalmente com baixa latência.",
+        },
+        {
+          question: "O que é o AWS Well-Architected Framework?",
+          answer:
+            "O AWS Well-Architected Framework oferece diretrizes para criar infraestruturas de nuvem seguras, resilientes e eficientes.",
+        },
+        {
+          question: "O que é o AWS Cost Explorer?",
+          answer:
+            "AWS Cost Explorer é uma ferramenta que permite visualizar e analisar seus custos e uso de serviços AWS ao longo do tempo.",
+        },
+        {
+          question: "Como o AWS CloudTrail ajuda na segurança?",
+          answer:
+            "AWS CloudTrail monitora e registra atividades de API em sua conta AWS, ajudando na auditoria e segurança.",
+        },
+        {
+          question: "Qual é o modelo de responsabilidade compartilhada da AWS?",
+          answer:
+            "Na AWS, a segurança é compartilhada entre a AWS (segurança da nuvem) e o cliente (segurança dentro da nuvem).",
+        },
+        {
+          question: "O que é o AWS Elastic Beanstalk?",
+          answer:
+            "AWS Elastic Beanstalk facilita a implantação e o gerenciamento de aplicações na AWS sem se preocupar com a infraestrutura.",
+        },
+        {
+          question: "Qual é a função do Amazon SNS?",
+          answer:
+            "Amazon SNS (Simple Notification Service) é um serviço de mensagens para entrega de notificações e alertas em tempo real.",
+        },
+        {
+          question: "Como o Amazon SQS melhora a resiliência das aplicações?",
+          answer:
+            "Amazon SQS (Simple Queue Service) gerencia filas de mensagens, permitindo a comunicação desacoplada entre componentes de uma aplicação.",
+        },
+        {
+          question: "O que é o AWS Artifact?",
+          answer:
+            "AWS Artifact é um portal que fornece acesso aos relatórios de conformidade da AWS e a documentos de segurança.",
+        },
+        {
+          question: "Qual é o principal uso do Amazon DynamoDB?",
+          answer:
+            "DynamoDB é um banco de dados NoSQL totalmente gerenciado, que oferece baixa latência e alta escalabilidade.",
+        },
+        {
+          question: "Como o AWS Direct Connect é usado?",
+          answer:
+            "AWS Direct Connect fornece uma conexão de rede privada de alta largura de banda entre sua infraestrutura e a AWS.",
+        },
+        {
+          question: "O que é o Amazon Kinesis?",
+          answer:
+            "Amazon Kinesis é um serviço para processar e analisar dados de streaming em tempo real.",
+        },
+        {
+          question:
+            "O que é a AWS e quais são suas principais vantagens em relação à infraestrutura tradicional?",
+          answer:
+            "A AWS é uma plataforma de computação em nuvem que oferece serviços sob demanda como armazenamento, processamento e banco de dados. Suas vantagens incluem escalabilidade, pagamento conforme o uso, alta disponibilidade e acesso global.",
+        },
+        {
+          question: "Qual é a definição de IaaS (Infraestrutura como Serviço)?",
+          answer:
+            "IaaS é um serviço que oferece infraestrutura de TI sob demanda, como servidores, redes e armazenamento, permitindo que os clientes gerenciem esses recursos.",
+        },
+        {
+          question:
+            "Qual serviço da AWS é usado para armazenar objetos de maneira escalável e segura?",
+          answer: "Amazon S3 (Simple Storage Service).",
+        },
+        {
+          question: "O que é o Amazon EC2 e para que ele é usado?",
+          answer:
+            "Amazon EC2 (Elastic Compute Cloud) é um serviço que fornece servidores virtuais escaláveis na nuvem para executar aplicações.",
+        },
+        {
+          question: "Qual é a principal função do Amazon RDS?",
+          answer:
+            "O Amazon RDS (Relational Database Service) facilita a configuração, operação e escalabilidade de bancos de dados relacionais na nuvem.",
+        },
+        {
+          question: "Como o AWS Lambda ajuda a reduzir custos operacionais?",
+          answer:
+            "O AWS Lambda executa código em resposta a eventos e só cobra pelo tempo de execução, eliminando a necessidade de gerenciar servidores.",
+        },
+        {
+          question:
+            "Qual serviço da AWS permite gerenciar identidades e acessos a recursos na nuvem?",
+          answer: "AWS IAM (Identity and Access Management).",
+        },
+        {
+          question:
+            "Qual é a diferença entre disponibilidade e durabilidade no contexto dos serviços da AWS?",
+          answer:
+            "Disponibilidade refere-se ao tempo de funcionamento de um serviço, enquanto durabilidade refere-se à probabilidade de os dados permanecerem intactos ao longo do tempo.",
+        },
+        {
+          question:
+            "Explique o conceito de Região e Zona de Disponibilidade na AWS.",
+          answer:
+            "Uma Região é um local geográfico com múltiplas Zonas de Disponibilidade, que são centros de dados independentes e isolados.",
+        },
+        {
+          question: "O que são Edge Locations e como elas são usadas na AWS?",
+          answer:
+            "Edge Locations são locais que armazenam conteúdo em cache para acelerar a entrega de dados aos usuários, principalmente usadas pelo Amazon CloudFront.",
+        },
+        {
+          question:
+            "Qual serviço da AWS ajuda a gerenciar credenciais e permissões de usuários?",
+          answer: "AWS IAM (Identity and Access Management).",
+        },
+        {
+          question: "Como o AWS Shield ajuda a proteger contra ataques DDoS?",
+          answer:
+            "O AWS Shield oferece proteção automática contra ataques DDoS em serviços da AWS.",
+        },
+        {
+          question:
+            "Explique o conceito de responsabilidade compartilhada na AWS.",
+          answer:
+            "Na AWS, a segurança é compartilhada entre a AWS (responsável pela segurança da nuvem) e o cliente (responsável pela segurança dentro da nuvem).",
+        },
+        {
+          question: "Qual é o papel do AWS WAF (Web Application Firewall)?",
+          answer:
+            "O AWS WAF protege aplicações web contra ameaças comuns, como SQL injection e XSS.",
+        },
+        {
+          question:
+            "O que é o AWS CloudTrail e como ele pode ser usado para auditoria?",
+          answer:
+            "O AWS CloudTrail monitora e registra atividades de API na conta AWS, ajudando em auditorias de segurança.",
+        },
+        {
+          question:
+            "Como o AWS Key Management Service (KMS) ajuda na criptografia de dados?",
+          answer:
+            "O AWS KMS permite criar e gerenciar chaves de criptografia usadas para proteger dados em serviços da AWS.",
+        },
+        {
+          question:
+            "Qual serviço permite monitorar e auditar as alterações nos recursos da AWS?",
+          answer: "AWS Config.",
+        },
+        {
+          question:
+            "Explique como o AWS Inspector ajuda na segurança de suas aplicações.",
+          answer:
+            "O AWS Inspector automatiza a avaliação de vulnerabilidades e conformidade das instâncias EC2.",
+        },
+        {
+          question: "O que é o AWS Artifact e como ele é usado?",
+          answer:
+            "AWS Artifact fornece relatórios de conformidade e documentos de segurança para ajudar em auditorias.",
+        },
+        {
+          question:
+            "Quais práticas de segurança são recomendadas ao criar grupos de segurança no EC2?",
+          answer:
+            "Restringir portas e protocolos ao mínimo necessário e usar listas de IP para controlar o acesso.",
+        },
+        {
+          question:
+            "Explique o conceito de escalabilidade horizontal e vertical na AWS.",
+          answer:
+            "Escalabilidade horizontal adiciona mais instâncias, enquanto escalabilidade vertical aumenta os recursos de uma instância existente.",
+        },
+        {
+          question: "Qual é a função do Amazon Route 53?",
+          answer:
+            "Amazon Route 53 é um serviço de DNS escalável que gerencia a localização de recursos na internet.",
+        },
+        {
+          question: "O que é um VPC (Virtual Private Cloud) na AWS?",
+          answer:
+            "VPC permite criar uma rede virtual isolada dentro da AWS, controlando o tráfego de entrada e saída.",
+        },
+        {
+          question: "Qual é o principal uso do Amazon CloudFront?",
+          answer:
+            "Amazon CloudFront é uma CDN (Content Delivery Network) que distribui conteúdo com baixa latência.",
+        },
+        {
+          question:
+            "Explique como o Elastic Load Balancer distribui o tráfego.",
+          answer:
+            "O Elastic Load Balancer distribui automaticamente o tráfego de entrada entre várias instâncias para aumentar a disponibilidade.",
+        },
+        {
+          question: "Qual serviço da AWS é usado para gerenciar containers?",
+          answer:
+            "Amazon ECS (Elastic Container Service) ou Amazon EKS (Elastic Kubernetes Service).",
+        },
+        {
+          question: "Como o AWS Auto Scaling ajuda na otimização de recursos?",
+          answer:
+            "Auto Scaling ajusta automaticamente a quantidade de recursos com base na demanda atual.",
+        },
+        {
+          question: "O que é o Amazon S3 Glacier e para que ele é utilizado?",
+          answer:
+            "Amazon S3 Glacier é um serviço de armazenamento para arquivamento de dados com recuperação de longo prazo.",
+        },
+        {
+          question:
+            "Explique a diferença entre instâncias reservadas e instâncias spot no EC2.",
+          answer:
+            "Instâncias reservadas oferecem desconto por compromisso de longo prazo, enquanto instâncias spot são mais baratas, mas podem ser interrompidas.",
+        },
+        {
+          question: "Qual é a função do Amazon Elastic Block Store (EBS)?",
+          answer:
+            "EBS fornece armazenamento em bloco persistente para instâncias EC2.",
+        },
+        {
+          question:
+            "Como o AWS Pricing Calculator pode ajudar na estimativa de custos?",
+          answer:
+            "O AWS Pricing Calculator estima os custos de execução de serviços AWS com base nas suas necessidades.",
+        },
+        {
+          question: "Qual é a principal função do AWS Budgets?",
+          answer:
+            "AWS Budgets ajuda a planejar e monitorar gastos, definindo alertas quando os custos ultrapassam limites.",
+        },
+        {
+          question: "Explique o modelo de pagamento 'Pay as you go' da AWS.",
+          answer:
+            "Você paga apenas pelos recursos que usa, sem compromisso ou custo antecipado.",
+        },
+        {
+          question: "Qual é a função do AWS Cost Explorer?",
+          answer:
+            "AWS Cost Explorer permite visualizar e analisar seus custos e uso ao longo do tempo.",
+        },
+        {
+          question:
+            "Como o uso de instâncias reservadas pode economizar custos?",
+          answer:
+            "Instâncias reservadas oferecem descontos em troca de um compromisso de uso de longo prazo.",
+        },
+        {
+          question:
+            "Explique a importância do AWS Free Tier para novos usuários.",
+          answer:
+            "AWS Free Tier permite testar serviços gratuitamente por um período limitado, ajudando novos usuários a aprender.",
+        },
+        {
+          question:
+            "Como o AWS Cost Allocation Tags ajuda no controle de custos?",
+          answer:
+            "Tags de alocação de custos permitem rastrear e atribuir despesas a projetos ou departamentos específicos.",
+        },
+        {
+          question: "O que é o Consolidated Billing na AWS Organizations?",
+          answer:
+            "Consolidated Billing permite combinar várias contas AWS em uma fatura para simplificar o gerenciamento e obter descontos.",
+        },
+        {
+          question:
+            "Qual é o impacto de regiões diferentes no custo dos serviços da AWS?",
+          answer:
+            "Custos podem variar entre regiões devido à localização e demanda de recursos.",
+        },
+        {
+          question: "Como evitar cobranças indesejadas em contas inativas?",
+          answer:
+            "Desative ou exclua recursos que não estão sendo usados e monitore regularmente os custos.",
+        },
+        {
+          question:
+            "Qual serviço da AWS é ideal para armazenar grandes quantidades de dados não estruturados?",
+          answer: "Amazon S3.",
+        },
+        {
+          question:
+            "Como a AWS ajuda na implementação de soluções de Machine Learning?",
+          answer:
+            "Serviços como Amazon SageMaker permitem treinar e implantar modelos de Machine Learning facilmente.",
+        },
+        {
+          question:
+            "Qual serviço é recomendado para armazenar logs e monitorar a performance de aplicações?",
+          answer: "Amazon CloudWatch.",
+        },
+        {
+          question:
+            "O que é o AWS Elastic Beanstalk e como ele facilita o desenvolvimento de aplicações?",
+          answer:
+            "Elastic Beanstalk gerencia automaticamente a implantação e dimensionamento de aplicações.",
+        },
+        {
+          question: "Qual é a principal função do Amazon SNS?",
+          answer:
+            "Amazon SNS (Simple Notification Service) facilita o envio de notificações em tempo real.",
+        },
+        {
+          question:
+            "Como o Amazon SQS pode melhorar a resiliência das aplicações?",
+          answer:
+            "SQS (Simple Queue Service) gerencia filas de mensagens para desacoplar e escalar componentes de aplicações.",
+        },
+        {
+          question: "Explique o uso do AWS Direct Connect.",
+          answer:
+            "AWS Direct Connect fornece uma conexão privada de alta largura de banda entre sua infraestrutura e a AWS.",
+        },
+        {
+          question:
+            "Qual serviço da AWS facilita a criação de arquiteturas sem servidor?",
+          answer: "AWS Lambda.",
+        },
+        {
+          question: "O que é o Amazon DynamoDB e para que ele é usado?",
+          answer:
+            "DynamoDB é um banco de dados NoSQL gerenciado, ideal para aplicações que exigem baixa latência.",
+        },
+        {
+          question:
+            "Qual solução AWS é recomendada para streaming de dados em tempo real?",
+          answer: "Amazon Kinesis.",
+        },
+        {
+          question:
+            "Ao planejar uma migração para a nuvem, qual serviço ajuda na transferência de grandes quantidades de dados?",
+          answer: "AWS Snowball.",
+        },
+        {
+          question:
+            "Como o AWS Well-Architected Framework ajuda na criação de arquiteturas na nuvem?",
+          answer:
+            "Oferece diretrizes para projetar sistemas escaláveis, seguros e eficientes na nuvem.",
+        },
+        {
+          question:
+            "Qual serviço facilita a distribuição global de conteúdo para usuários finais com baixa latência?",
+          answer: "Amazon CloudFront.",
+        },
+        {
+          question: "Em que situações o Amazon RDS Multi-AZ é recomendado?",
+          answer:
+            "Para alta disponibilidade e recuperação de desastres de bancos de dados.",
+        },
+        {
+          question:
+            "Explique o uso de Auto Scaling Groups no gerenciamento de instâncias EC2.",
+          answer:
+            "Auto Scaling Groups ajustam o número de instâncias EC2 com base na demanda para otimizar desempenho e custo.",
+        },
+        {
+          question:
+            "Como o Amazon Aurora difere dos outros serviços de banco de dados da AWS?",
+          answer:
+            "Aurora é um banco de dados relacional gerenciado, compatível com MySQL e PostgreSQL, que oferece desempenho superior e alta disponibilidade.",
+        },
+        {
+          question:
+            "Qual serviço da AWS você recomendaria para autenticação de usuários em uma aplicação web?",
+          answer: "Amazon Cognito.",
+        },
+        {
+          question:
+            "Explique o papel do Amazon Elastic Container Service (ECS).",
+          answer:
+            "ECS gerencia a execução e escalabilidade de containers Docker em instâncias EC2.",
+        },
+        {
+          question: "Como o AWS Backup simplifica o gerenciamento de backups?",
+          answer:
+            "AWS Backup centraliza e automatiza a criação, agendamento e monitoramento de backups de dados.",
+        },
+        {
+          question:
+            "Qual é a importância do AWS Trusted Advisor na otimização de recursos?",
+          answer:
+            "Trusted Advisor fornece recomendações para melhorar a segurança, desempenho, resiliência e redução de custos.",
+        },
+      ];
+
+      // Função para embaralhar os flashcards
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+      }
+
+      // Embaralhar os flashcards no início da sessão
+      shuffle(flashcards);
+
+      let currentIndex = 0;
+
+      function showFlashcard(index) {
+        const question = document.getElementById("question");
+        const answer = document.getElementById("answer");
+        question.textContent = flashcards[index].question;
+        answer.textContent = flashcards[index].answer;
+        question.style.display = "block";
+        answer.style.display = "none";
+      }
+
+      document
+        .getElementById("flashcard")
+        .addEventListener("click", function () {
+          const question = document.getElementById("question");
+          const answer = document.getElementById("answer");
+          if (question.style.display === "block") {
+            question.style.display = "none";
+            answer.style.display = "block";
+          } else {
+            question.style.display = "block";
+            answer.style.display = "none";
+          }
+        });
+
+      function previousFlashcard() {
+        if (currentIndex > 0) {
+          currentIndex--;
+          showFlashcard(currentIndex);
+        }
+      }
+
+      function nextFlashcard() {
+        if (currentIndex < flashcards.length - 1) {
+          currentIndex++;
+          showFlashcard(currentIndex);
+        }
+      }
+
+      // Mostrar o primeiro flashcard na carga inicial da página
+      showFlashcard(currentIndex);
+    </script>
+  </body>
+</html>
